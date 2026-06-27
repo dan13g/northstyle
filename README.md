@@ -5,7 +5,7 @@ Lean local EL stack for a Postgres OLTP source and Airbyte CDC into Snowflake ra
 ## What is in this repo
 
 - A custom Postgres Docker image pinned to `postgres:18.4`, which is the current `latest` stable tag on the Docker official image page as verified on June 27, 2026.
-- A self-managed Airbyte stack pinned to `v2.0.0`, which GitHub lists as the latest Airbyte release on the releases page opened on June 27, 2026.
+- A self-managed Airbyte stack pinned to `v0.63.15`, the tested tag in Airbyte's older multi-container image line where every image in this Docker Compose stack still exists, as verified on June 27, 2026.
 - Snowflake SQL templates for the warehouse, database, schemas, role, and Airbyte service user.
 
 There is no dbt, Airflow, or anything else in this repo.

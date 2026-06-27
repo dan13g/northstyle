@@ -1,0 +1,88 @@
+{
+    "exportedAt":  "2026-06-27T10:44:16.5254878+01:00",
+    "oldAirbyte":  {
+                       "version":  "0.63.15",
+                       "url":  "http://127.0.0.1:8000",
+                       "workspaceId":  "3ac900ec-4d4f-4ace-8c37-a5d263e89aad"
+                   },
+    "postgresSource":  {
+                           "name":  "Northstyle Postgres CDC",
+                           "sourceId":  "4c502461-bdb1-4cfc-b235-af092d303e7b",
+                           "definitionId":  "decd338e-5647-4c0b-adf4-da0e75f5a750",
+                           "host":  "host.docker.internal",
+                           "port":  5433,
+                           "database":  "northstyle",
+                           "schemas":  [
+                                           "oltp"
+                                       ],
+                           "username":  "airbyte_cdc",
+                           "password":  "airbyte_cdc",
+                           "sslMode":  "disable",
+                           "tunnelMethod":  "NO_TUNNEL",
+                           "replicationMethod":  {
+                                                     "method":  "CDC",
+                                                     "plugin":  "pgoutput",
+                                                     "publication":  "airbyte_publication",
+                                                     "replicationSlot":  "airbyte_slot"
+                                                 }
+                       },
+    "snowflakeDestination":  {
+                                 "name":  "Snowflake",
+                                 "destinationId":  "0880270a-9ed3-4392-8caa-ecc11823e70b",
+                                 "definitionId":  "424892c4-daac-4491-b35d-c6688ba547ba",
+                                 "host":  "CPRCYYC-FB19926.snowflakecomputing.com",
+                                 "role":  "ACCOUNTADMIN",
+                                 "warehouse":  "COMPUTE_WH",
+                                 "database":  "NORTHSTYLE",
+                                 "schema":  "RAW",
+                                 "username":  "BGHEOCA",
+                                 "password":  "BrilliantCakes$13",
+                                 "authType":  "Username and Password",
+                                 "disableTypeDedupe":  false,
+                                 "retentionPeriodDays":  1
+                             },
+    "connection":  {
+                       "name":  "Northstyle Postgres CDC -\u003e Snowflake",
+                       "connectionId":  "1dc7f9e0-57be-49ed-ab24-a6e0e9620572",
+                       "sourceId":  "4c502461-bdb1-4cfc-b235-af092d303e7b",
+                       "destinationId":  "0880270a-9ed3-4392-8caa-ecc11823e70b",
+                       "scheduleType":  "manual",
+                       "status":  "active",
+                       "namespaceDefinition":  "destination",
+                       "stream":  {
+                                      "name":  "customers",
+                                      "namespace":  "oltp",
+                                      "syncMode":  "incremental",
+                                      "cursorField":  [
+                                                          "_ab_cdc_lsn"
+                                                      ],
+                                      "primaryKey":  [
+                                                         "customer_id"
+                                                     ],
+                                      "destinationSyncMode":  "append"
+                                  }
+                   },
+    "cdcState":  {
+                     "publication":  "airbyte_publication",
+                     "replicationSlot":  "airbyte_slot",
+                     "slot":  {
+                                  "plugin":  "pgoutput",
+                                  "database":  "northstyle",
+                                  "active":  false,
+                                  "restartLsn":  "0/1BF59E8",
+                                  "confirmedFlushLsn":  "0/1BF6720"
+                              },
+                     "airbyteState":  {
+                                          "globalStateId":  "c1849865-1be6-4d9b-ad8f-d3b5e49cfffa",
+                                          "globalState":  "{\"state\":{\"[\"\"northstyle\"\",{\"\"server\"\":\"\"northstyle\"\"}]\":\"\"{\"\"transaction_id\"\":null,\"\"lsn\"\":29319328,\"\"txId\"\":784,\"\"ts_usec\"\":1782552448701597}\"\"}}",
+                                          "streamStateId":  "544c5e40-f3a6-4241-9939-da472f92f257",
+                                          "streamState":  {
+                                                              "stream_name":  "customers",
+                                                              "cursor_field":  [
+                                                                                   "_ab_cdc_lsn"
+                                                                               ],
+                                                              "stream_namespace":  "oltp"
+                                                          }
+                                      }
+                 }
+}

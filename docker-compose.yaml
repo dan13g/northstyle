@@ -7,6 +7,19 @@ x-logging: &default-logging
     max-file: "5"
 
 services:
+  docker-proxy:
+    image: alpine/socat
+    container_name: northstyle-docker-proxy
+    command:
+      - -t
+      - "900"
+      - TCP-LISTEN:2375,fork,reuseaddr
+      - UNIX-CONNECT:/var/run/docker.sock
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   postgres-oltp:
     build:
       context: ./docker/postgres
@@ -28,7 +41,7 @@ services:
       - -c
       - max_replication_slots=10
     volumes:
-      - postgres_oltp_data:/var/lib/postgresql/data
+      - postgres_oltp_data:/var/lib/postgresql
     ports:
       - "${POSTGRES_HOST_PORT}:5432"
     healthcheck:
@@ -98,6 +111,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USER: ${DATABASE_USER}
       DEPLOYMENT_MODE: ${DEPLOYMENT_MODE}
+      DOCKER_HOST: docker-proxy:2375
       FIELD_SELECTION_WORKSPACES: ${FIELD_SELECTION_WORKSPACES}
       INTERNAL_API_HOST: ${INTERNAL_API_HOST}
       JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
@@ -124,24 +138,35 @@ services:
       NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST}
       OTEL_COLLECTOR_ENDPOINT: ${OTEL_COLLECTOR_ENDPOINT}
       SECRET_PERSISTENCE: ${SECRET_PERSISTENCE}
+      SEGMENT_WRITE_KEY: ${SEGMENT_WRITE_KEY}
       SHOULD_RUN_NOTIFY_WORKFLOWS: ${SHOULD_RUN_NOTIFY_WORKFLOWS}
+      STORAGE_BUCKET_ACTIVITY_PAYLOAD: ${STORAGE_BUCKET_ACTIVITY_PAYLOAD}
+      STORAGE_BUCKET_LOG: ${STORAGE_BUCKET_LOG}
+      STORAGE_BUCKET_STATE: ${STORAGE_BUCKET_STATE}
+      STORAGE_BUCKET_WORKLOAD_OUTPUT: ${STORAGE_BUCKET_WORKLOAD_OUTPUT}
+      STORAGE_TYPE: ${STORAGE_TYPE}
       SYNC_JOB_MAX_ATTEMPTS: ${SYNC_JOB_MAX_ATTEMPTS}
       SYNC_JOB_MAX_TIMEOUT_DAYS: ${SYNC_JOB_MAX_TIMEOUT_DAYS}
       TEMPORAL_HOST: ${TEMPORAL_HOST}
       TRACKING_STRATEGY: ${TRACKING_STRATEGY}
       USE_STREAM_CAPABLE_STATE: ${USE_STREAM_CAPABLE_STATE}
       WEBAPP_URL: ${WEBAPP_URL}
+      WORKLOAD_API_HOST: ${WORKLOAD_API_URL}
       WORKER_ENVIRONMENT: ${WORKER_ENVIRONMENT}
       WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS}
       WORKSPACE_DOCKER_MOUNT: ${WORKSPACE_DOCKER_MOUNT}
       WORKSPACE_ROOT: ${WORKSPACE_ROOT}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - airbyte_workspace:${WORKSPACE_ROOT}
       - airbyte_local:${LOCAL_ROOT}
     depends_on:
       airbyte-bootloader:
         condition: service_completed_successfully
+      airbyte-server:
+        condition: service_started
+        restart: true
+      docker-proxy:
+        condition: service_started
 
   airbyte-server:
     image: airbyte/server:${AIRBYTE_VERSION}
@@ -149,6 +174,7 @@ services:
     logging: *default-logging
     restart: unless-stopped
     environment:
+      AIRBYTE_API_HOST: ${AIRBYTE_API_HOST}
       AIRBYTE_ROLE: ${AIRBYTE_ROLE}
       AIRBYTE_VERSION: ${AIRBYTE_VERSION}
       AUTO_DETECT_SCHEMA: ${AUTO_DETECT_SCHEMA}
@@ -173,12 +199,19 @@ services:
       MICRONAUT_ENVIRONMENTS: ${WORKERS_MICRONAUT_ENVIRONMENTS}
       NEW_SCHEDULER: ${NEW_SCHEDULER}
       SECRET_PERSISTENCE: ${SECRET_PERSISTENCE}
+      SEGMENT_WRITE_KEY: ${SEGMENT_WRITE_KEY}
       SHOULD_RUN_NOTIFY_WORKFLOWS: ${SHOULD_RUN_NOTIFY_WORKFLOWS}
+      STORAGE_BUCKET_ACTIVITY_PAYLOAD: ${STORAGE_BUCKET_ACTIVITY_PAYLOAD}
+      STORAGE_BUCKET_LOG: ${STORAGE_BUCKET_LOG}
+      STORAGE_BUCKET_STATE: ${STORAGE_BUCKET_STATE}
+      STORAGE_BUCKET_WORKLOAD_OUTPUT: ${STORAGE_BUCKET_WORKLOAD_OUTPUT}
+      STORAGE_TYPE: ${STORAGE_TYPE}
       TEMPORAL_HOST: ${TEMPORAL_HOST}
       TRACKING_STRATEGY: ${TRACKING_STRATEGY}
       WEBAPP_URL: ${WEBAPP_URL}
       WORKER_ENVIRONMENT: ${WORKER_ENVIRONMENT}
       WORKSPACE_ROOT: ${WORKSPACE_ROOT}
+      CONNECTOR_BUILDER_SERVER_API_HOST: ${CONNECTOR_BUILDER_SERVER_API_HOST}
     volumes:
       - airbyte_workspace:${WORKSPACE_ROOT}
       - airbyte_data:${CONFIG_ROOT}
@@ -193,8 +226,10 @@ services:
     logging: *default-logging
     restart: unless-stopped
     environment:
+      AIRBYTE_SERVER_HOST: ${AIRBYTE_SERVER_HOST}
       CONNECTOR_BUILDER_API_HOST: ${CONNECTOR_BUILDER_API_HOST}
       INTERNAL_API_HOST: ${INTERNAL_API_HOST}
+      KEYCLOAK_INTERNAL_HOST: localhost
       TRACKING_STRATEGY: ${TRACKING_STRATEGY}
     depends_on:
       airbyte-bootloader:
@@ -266,8 +301,12 @@ services:
       - "${AIRBYTE_API_PORT}:8001"
       - "${AIRBYTE_TUNNEL_PORT}:8003"
     depends_on:
-      - airbyte-webapp
-      - airbyte-server
+      airbyte-webapp:
+        condition: service_started
+        restart: true
+      airbyte-server:
+        condition: service_started
+        restart: true
 
 volumes:
   postgres_oltp_data:
