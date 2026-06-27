@@ -1,6 +1,6 @@
 # northstyle
 
-Lean local EL stack for a Postgres OLTP source and Airbyte CDC into Snowflake raw.
+Lean local EL stack for a Postgres OLTP source and Airbyte CDC into Snowflake raw
 
 ## What is in this repo
 
