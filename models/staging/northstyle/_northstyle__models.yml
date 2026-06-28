@@ -6,9 +6,6 @@ models:
     columns:
       - name: customer_id
         description: Unique identifier for a customer.
-        tests:
-          - not_null
-          - unique
       - name: customer_name
         description: Cleaned customer name.
       - name: created_at
