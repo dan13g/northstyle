@@ -43,11 +43,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   northstyle:
     staging:
-      +schema: staging
+      +schema: STAGING
       +materialized: table
     intermediate:
-      +schema: intermediate
+      +schema: INTERMEDIATE
       +materialized: table
     marts:
-      +schema: marts
+      +schema: MARTS
       +materialized: table
