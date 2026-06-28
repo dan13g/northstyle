@@ -5,6 +5,10 @@ sources:
     description: Raw Northstyle data loaded into Snowflake.
     database: northstyle
     schema: public
+    quoting:
+      database: false
+      schema: true
+      identifier: true
     tables:
       - name: customers
         description: Raw customer records replicated into Snowflake.
