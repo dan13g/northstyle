@@ -1,4 +1,6 @@
 .env
 .DS_Store
 Thumbs.db
-
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
