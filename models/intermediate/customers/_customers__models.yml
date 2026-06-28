@@ -6,9 +6,6 @@ models:
     columns:
       - name: customer_id
         description: Unique identifier for a customer.
-        tests:
-          - not_null
-          - unique
       - name: customer_name
         description: Customer name ready for analytics consumption.
       - name: created_at

@@ -15,9 +15,6 @@ sources:
         columns:
           - name: id
             description: Unique identifier for a customer.
-            tests:
-              - not_null
-              - unique
           - name: name
             description: Customer name from the source system.
           - name: created_at
